@@ -2,5 +2,4 @@ data/
 .ipynb_checkpoints/
 ideas.txt
 logs/
-__pycache__/
 
