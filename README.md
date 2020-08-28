@@ -1,43 +1,27 @@
  ### Objective
-The objective of this gitrepo is to build a model that predicts the product category (prodcat1) that a customer is likely to order. Additionally, I added in a purchase history and online engagement based customer segmentation.
+There are 2 main objectives of this analysis. The first is to predict the product category (prodcat1) that a customer is likely to order. The second is to segment the customer population. 
 
 ### Overall Approach and Rationele 
-- **Data Exploration** - My goal was to understand the customers as well as possible using various different charts. Additionally I wanted to understand what data quality issues existed so that I could create a function in dataset_creation.py that would automatically clean the data as needed. 
-- **Customer Segmentation** - My goal was to group customers together based on their overall engagement with the site and purchase history. In order to give each event and product category equal weighting I used a hyperbolic tangent layer inside an autoencoder so that I both reduced dimensionality and bounded all variables between -1 and 1. 
-- **Product Category Prediction** - My goal here was to try to predict what the next category a user would purchase based on their online engagement and purchase history. I used a multi-input neural network that had three inputs (session history, order history, and month of order) and 1 output (probability 1 or products would be purchased in each category.) I considered using a recommender system such as collaborative filtering, but felt that the limited number of outputs and the fact that users can be repeat buyers made me elect to make this a classification problem.
-    - Performance Evaluation - To evaluate predictive performance I used the following two metrics that measure overall predictive power independent of any chosen probability cutoff. 
-        - Mean AUC of ROC Curve - This metric tells me whether or not the model is performing better than random (0.5) on average for each of the 6 product classes.
-        - Mean Average Precision - This metric shows the average average precision across all levels of recall for all classes. The closer it is to 1 the better the performance. (This metric is very sensitive to the baseline proportion between the classes)
-
-### Recommendations for Future Upgrades
-- Customer Segmentation
-    - Meet with marketing team to understand the objective of their customer segmentation.
-- Product Category Prediction
-    - Start tracking customer behavior just before making a purchase. This doesn't appear to be fully tracked in the existing data.
-    - Use Category recommender in marketing campaigns
-    - Design experiment to
-    - **Improve Sophistication:** 
-    - **Improve Understanding:** 
-        - Understand how we intend to deploy this model
-
-### Description on Contents
-- Data Exploration
-    1. Overview - Here I explore the order and online data to better understand the data quality issues that need to be addressed and get a better understanding of how users interact with the site. Additionally, I create a few prototype directed graphs showing the relationship between products that are frequently purchased together. 
-    2. Individual-Orders - Here I explore individual customers to get a better understanding of what the behavior of the most engaged users are like. 
-
-- Customer Segmentation
-    1. Dataset Creation - Here I clean and reshape the order and session data so that it can be used to segment customers.
-    2. AutoEncoder Training - Here I use an autoencoder to reduce the dimensionality of the the features and scale them to values between -1 and 1.
-    3. K-Means Clustering - Here I cluster the customers with K-means using their embeddings and visualize the clusters using TSNE. 
+ 1. **Data Exploration** My goal was to find data quality issues and understand the data better.
+    1. _Overview:_ In this section I created multiple visualizations of both the online.csv and order.csv datasets. In this section I checked for missing values, date ranges, averages over time, typical customer engagement patterns, and even a directed graph showing which products are purchased together. Visualizing data to gain an intuitive understanding of the data's relationships and data quality issues are critical. Many of the data quality issues were fixed using functions stored and dataset_creation.py. These functions were then unit tested so as to reduce the chances of bugs entering my code. Unit testing is often a step that is often over looked by other data scientists, but is really helpful in improving overall code quality.
+    2. _Individual Customer Exploration:_ This section was a quick supplemental analysis where I manually inspected the engagement of the most engaged customers across both their order and online history.
+ 2. **Customer Segmentation** - My goal was to segment customers based on how they engaged with the site as well as their particular product preferences. Normally, I would have sat down with the marketer to understand their objectives better before segmenting, but this is just a generic way to segment customers.
+    1. _Dataset Creation:_ In this section I read in and cleaned customer order and online data for 2016 and 2017 because that's when they both are populated. Then calculated the total counts of online engagement and order history for each of the customers. I then exported this dataset to a pickle file to be used in the next section.
+    2. _Auto Encoder Training:_ Here I built an autoencoder that both reduces the dimensionality of the input data and compresses the range of embeddings between -1 and 1. Compressing the dimensionality and standardizing the inputs to be between a consistent range will make clustering with k-means easier and give equal weighting to each dimension. 
+    3. _K-Means Clustering:_ Here I score the customers using the auto encoder and then test out various levels of k to segment customers with the K-Means algorithm. Then I selected 8 clusters to be the optimal number of clusters by investigating the within sum of squares with the "Elbow Method." Afterwards I visualize the effectiveness of the clustering with the TSNE algorithm. Lastly, I calculate the average engagement values for each of the different clusters to try to get an idea of what the clusters represent. 
     
-- Product Category Predition
-    1. Create Raw Modeling File - 
-    2. Create Final Modeling File - 
-    3. Build Model
-- Other Contents
-    - dataset_creation.py - This contains frequently used functions in the dataset creation process. 
-    - performance_evaluation.py - This contains functions that are used to evaluate model performance
-    - test_dataset_creation.py - This contains a number of unit tests for frequently used functions for dataset creation.
-    - Other Exploration
-        - This contains a number of different explorations that didn't quite make it into the final cut. Explore at your own risk.
+ 3. **Product Category Prediction** - My goal here was to try to predict the next category a user would purchase based on their online engagement and purchase history. I make the assumption that we'll know the month of their purchase at time of prediction. Like for example if it was relalted to a marketing campaign.
+     1. _Create Raw Modeling File:_ In this section I created a raw version of the modeling file that was eventually used to predict the category of product a user would purchase next. It resulted in the following datasets:
+        - final_previous_order_df - Which matches each order with all the previous orders counts made by that customer for the last 14 months. 
+        - dependent_vars - This contained the raw depenent variable of prodcat1 purchases as well as the month of purchase.
+        - previous_online_sessions_by_week - This table consists of all the previous online session event counts made by that customer for the last 53 weeks.
+     2. _Create Final Modeling File:_ In this section I created an HDF5 file for both the training and test dataset. This dataset contained all the independent and dependent variables that will be trained in the neural network.
+     3. _Model Building:_ I used a multi-input neural network that had three inputs (session history, order history, and month of order) and 1 output (probability 1 or products would be purchased in each category.) I considered using a recommender system such as collaborative filtering, but felt that the limited number of outputs and the fact that users can be repeat buyers made me elect to make this a classification problem.
+        - _Performance Evaluation_ - I used Mean AUC of the ROC Curve and Mean Average Precision to evaluate predictive performance because they are independent of any chosen probability cutoff.
+          - Mean AUC of ROC Curve - This metric tells me whether or not the model is performing better than random (0.5) on average for each of the 6 product classes.
+          - Mean Average Precision - This metric shows the average average precision across all levels of recall for all classes. The closer it is to 1 the better the performance. (This metric is very sensitive to the baseline proportion between the classes)
 
+### Appendix
+  - dataset_creation.py - This contains frequently used functions in the dataset creation process. 
+  - performance_evaluation.py - This contains functions that are used to evaluate model performance.
+  - test_dataset_creation.py - This contains a number of unit tests for frequently used functions for dataset creation.
