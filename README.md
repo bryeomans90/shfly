@@ -1,39 +1,43 @@
-# Data Science Homework - Homework assignment for Data Scientist candidate
-### Objective: Develop a predictive model based on the provided Order and Online customer behavior data (data.zip). The analysis can be done in R or Python and should be presented in an R-Studio Notebook or Jupyter Notebook. The assignment should produce a multi-class classification supervised learning model to predict product category (prodcat1) a customer is likely to order. Use your expertise to design the analysis and provide a rationale of chosen approach. Once completed, please upload your assigment to your personal github repo and share the link. In your workflow, please touch on each of the following areas:							
+ ### Objective
+The objective of this gitrepo is to build a model that predicts the product category (prodcat1) that a customer is likely to order. Additionally, I added in a purchase history and online engagement based customer segmentation.
 
-1) Exploration and understanding of the data sets									
-2) Feature engineering									
-3) Feature selection									
-4) Model design and sampling									
-5) Model generation									
-6) Model evaluation
-7) Summary of results: 2-3 paragraphs textual summary
-									
-Note: It is not necessary to produce a highly predictive model, but, rather, to illustrate your understanding and practical knowledge of the model building process. There is no right answer, so you can go with certain number of assumptions about the data as you see fit. However, in case you’re unable to proceed without the needed clarification, please feel free to reach out.								
-Bonus: If you can work in customer segmenation as part of your EDA
+### Overall Approach and Rationele 
+- **Data Exploration** - My goal was to understand the customers as well as possible using various different charts. Additionally I wanted to understand what data quality issues existed so that I could create a function in dataset_creation.py that would automatically clean the data as needed. 
+- **Customer Segmentation** - My goal was to group customers together based on their overall engagement with the site and purchase history. In order to give each event and product category equal weighting I used a hyperbolic tangent layer inside an autoencoder so that I both reduced dimensionality and bounded all variables between -1 and 1. 
+- **Product Category Prediction** - My goal here was to try to predict what the next category a user would purchase based on their online engagement and purchase history. I used a multi-input neural network that had three inputs (session history, order history, and month of order) and 1 output (probability 1 or products would be purchased in each category.) I considered using a recommender system such as collaborative filtering, but felt that the limited number of outputs and the fact that users can be repeat buyers made me elect to make this a classification problem.
+    - Performance Evaluation - To evaluate predictive performance I used the following two metrics that measure overall predictive power independent of any chosen probability cutoff. 
+        - Mean AUC of ROC Curve - This metric tells me whether or not the model is performing better than random (0.5) on average for each of the 6 product classes.
+        - Mean Average Precision - This metric shows the average average precision across all levels of recall for all classes. The closer it is to 1 the better the performance. (This metric is very sensitive to the baseline proportion between the classes)
 
-### Data Sets
+### Recommendations for Future Upgrades
+- Customer Segmentation
+    - Meet with marketing team to understand the objective of their customer segmentation.
+- Product Category Prediction
+    - Start tracking customer behavior just before making a purchase. This doesn't appear to be fully tracked in the existing data.
+    - Use Category recommender in marketing campaigns
+    - Design experiment to
+    - **Improve Sophistication:** 
+    - **Improve Understanding:** 
+        - Understand how we intend to deploy this model
 
-Table order.csv  263278 obs. of  6 variables:
+### Description on Contents
+- Data Exploration
+    1. Overview - Here I explore the order and online data to better understand the data quality issues that need to be addressed and get a better understanding of how users interact with the site. Additionally, I create a few prototype directed graphs showing the relationship between products that are frequently purchased together. 
+    2. Individual-Orders - Here I explore individual customers to get a better understanding of what the behavior of the most engaged users are like. 
 
-|Columns|Data|Column Description|
-|----|----|----|
-|custno   | int  18944 18944 18944 36096 1 6401 25601 57601 2 2 ...		|Customer number		|
-|ordno    | int  64694 28906 114405 62681 1 8187 41198 112311 70848 2 ...	|Order number			|
-|orderdate| POSIXct, format: "2016-11-27 20:57:20" "2017-04-23 21:31:03"  	|Order date			|
-|prodcat2 | int  NA NA NA NA NA NA NA NA NA NA ...				|Product category -detail	|
-|prodcat1 | int  1 1 1 1 1 1 1 1 1 1 ...					|Product category		|
-|revenue  | num  76.4 130.7 139.2 72.5 100.2 ...				|Revenue			|
+- Customer Segmentation
+    1. Dataset Creation - Here I clean and reshape the order and session data so that it can be used to segment customers.
+    2. AutoEncoder Training - Here I use an autoencoder to reduce the dimensionality of the the features and scale them to values between -1 and 1.
+    3. K-Means Clustering - Here I cluster the customers with K-means using their embeddings and visualize the clusters using TSNE. 
+    
+- Product Category Predition
+    1. Create Raw Modeling File - 
+    2. Create Final Modeling File - 
+    3. Build Model
+- Other Contents
+    - dataset_creation.py - This contains frequently used functions in the dataset creation process. 
+    - performance_evaluation.py - This contains functions that are used to evaluate model performance
+    - test_dataset_creation.py - This contains a number of unit tests for frequently used functions for dataset creation.
+    - Other Exploration
+        - This contains a number of different explorations that didn't quite make it into the final cut. Explore at your own risk.
 
-	
-Table: online.csv	954774 obs. of  7 variables:
-
-|Columns|Data|Column Description|
-|----|----|----|
-|session| int  419542 3030130 2638740 880408 2612179 880953 418956 281663 26191 1363670 ...	|online session key|
-|visitor| int  140970 14501 419353 90673 191542 419268 14938 419163 419163 14464 ...	|Online visitor key|
-|dt| POSIXct, format: "2016-09-16 05:03:23"  ...	|Online activity date|
-|custno| int  3840 70400 21248 39168 47616 47616 47872 49920 49920 54784 ...	|Customer number|
-|category| int  1 1 1 1 1 1 1 1 1 1 ...	|Online browsing category (prodcat1 from order.csv)|
-|event1  | int  NA NA NA NA NA NA NA NA NA NA ...	|Online event 1|
-|event2  | int  1 1 1 1 1 1 1 1 1 1 ...	|Online event 2|
